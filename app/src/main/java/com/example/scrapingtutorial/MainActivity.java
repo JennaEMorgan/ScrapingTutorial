@@ -22,7 +22,7 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
 
     // URL Address
-    String url = "https://www.google.com/";
+    String url = "https://athletics.augustana.edu/sports/mens-basketball/roster";
     ProgressDialog mProgressDialog;
 
     @Override
@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
         logobutton.setOnClickListener(new OnClickListener() {
             public void onClick(View arg0) {
                 // Execute Logo AsyncTask
-                new Logo().execute();
+                new Roster().execute();
             }
         });
 
@@ -137,8 +137,8 @@ public class MainActivity extends Activity {
     }
 
     // Logo AsyncTask
-    private class Logo extends AsyncTask<Void, Void, Void> {
-        Bitmap bitmap;
+    private class Roster extends AsyncTask<Void, Void, Void> {
+        Elements playerPosition, playerName, playerOther, coaches;
 
         @Override
         protected void onPreExecute() {
@@ -157,13 +157,17 @@ public class MainActivity extends Activity {
                 // Connect to the web site
                 Document document = Jsoup.connect(url).get();
                 // Using Elements to get the class data
-                Elements img = document.select("img[alt=Google]");
-                // Locate the src attribute
-                String imgSrc = img.attr("src");
-                // Download image from URL
-                InputStream input = new java.net.URL("https://www.google.com"+imgSrc).openStream();
-                // Decode Bitmap
-                bitmap = BitmapFactory.decodeStream(input);
+                playerName = document.select("div.sidearm-roster-player-name");
+                playerPosition = document.select("div.sidearm-roster-player-position");
+                playerOther = document.select("div.sidearm-roster-player-other.hide-on-large");
+                coaches = document.select("div.sidearm-roster-coach-details.flex-item-1.column");
+
+//                // Locate the src attribute
+//                String imgSrc = img.attr("src");
+//                // Download image from URL
+//                InputStream input = new java.net.URL(url+imgSrc).openStream();
+//                // Decode Bitmap
+//                bitmap = BitmapFactory.decodeStream(input);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -174,8 +178,13 @@ public class MainActivity extends Activity {
         @Override
         protected void onPostExecute(Void result) {
             // Set downloaded image into ImageView
-            ImageView logoimg = (ImageView) findViewById(R.id.logo);
-            logoimg.setImageBitmap(bitmap);
+            TextView txt = (TextView) findViewById(R.id.logo);
+            String output = "";
+            for (int i = 0; i < playerName.size(); i++) {
+                output += playerName.get(i).text() + " " + playerPosition.get(i).text() + " " +
+                        playerOther.get(i).text() + "\n";
+            }
+            txt.setText(coaches.text());
             mProgressDialog.dismiss();
         }
     }
